@@ -1,5 +1,6 @@
 import pygame
 import random
+import sys
 
 # Initialize Pygame
 pygame.init()
@@ -8,6 +9,9 @@ pygame.init()
 window_width = 800
 window_height = 600
 screen = pygame.display.set_mode((window_width, window_height))
+
+# Set up the font
+font = pygame.font.SysFont(None, 100)
 
 # Load the player, enemy, and bullet images
 player_image = pygame.image.load("Spaceship_tut.png")
@@ -18,7 +22,7 @@ bullet_image = pygame.image.load("spr_bullet_strip02.png")
 player_rect = player_image.get_rect()
 player_rect.x = (window_width - player_rect.width) // 2
 player_rect.y = window_height - player_rect.height
-player_speed = 1
+player_speed = 1.5
 
 # Set up the bullets list
 bullets = []
@@ -30,11 +34,56 @@ enemy_speed = 1
 
 # Set up player lives
 player_lives = 5
- 
+
 # Set up score
 score = 0
 
+# Set up the start button
+button_width = 200
+button_height = 100
+button_x = (window_width - button_width) // 2
+button_y = (window_height - button_height) // 2
+start_button_image = pygame.image.load("play.png ")
+start_button_rect = start_button_image.get_rect()
+start_button_rect.center = (button_x + button_width // 2, button_y + button_height //2 )
+
+# Create a text surface
+text_surface = font.render("Space Shooters", True,(0,255,255))
+
+# Get the dimensions of the text surface
+text_rect = text_surface.get_rect()
+
+# Center the text surface on the screen
+text_rect.center = (window_width // 2, 200)
+
 # Game loop
+show_start_screen = True
+while show_start_screen:
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # Check if the mouse was clicked inside the start button
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            if start_button_rect.collidepoint(mouse_x, mouse_y):
+                # Start the game
+                show_start_screen = False
+
+    # Draw graphics
+    screen.fill((0, 0, 0))  # fill the screen with black color
+
+    # Draw the "Space Shooters" text surface on the screen
+    screen.blit(text_surface, text_rect)
+
+    # Draw the start button image on the screen
+    screen.blit(start_button_image, start_button_rect)
+
+    # Update the display
+    pygame.display.update()
+
+# Main game loop
 running = True
 while running:
     # Handle events
@@ -43,7 +92,7 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
             # Fire a bullet when the space bar is pressed
-              bullet_rect = bullet_image.get_rect()
+            bullet_rect = bullet_image.get_rect()
             bullet_rect.midbottom = player_rect.midtop
             bullets.append(bullet_rect)
 
@@ -71,12 +120,11 @@ while running:
     # Move the bullets
     for bullet_rect in bullets:
         bullet_rect.y -= bullet_speed
-
     # Remove bullets that have gone offscreen
     bullets = [bullet_rect for bullet_rect in bullets if bullet_rect.bottom >= 0]
 
     # Add enemies randomly
-    if len(enemies) < 50 and random.randint(0, 100) < 1:
+    if len(enemies) < 10 and random.randint(0, 100) < 1:
         enemy_rect = enemy_image.get_rect()
         enemy_rect.x = random.randint(0, window_width - enemy_rect.width)
         enemy_rect.y = -enemy_rect.height
@@ -91,14 +139,13 @@ while running:
                 bullets.remove(bullet_rect)
                 score += 1
                 break
-     # Check for collisions with player
+    # Check for collisions with player
     for enemy_rect in enemies:
         if enemy_rect.colliderect(player_rect):
             player_lives -= 1
             enemies.remove(enemy_rect)
             if player_lives <= 0:
                 running = False
-               \
 
     # Draw graphics
     screen.fill((0, 0, 0))  # fill the screen with black color
@@ -113,11 +160,9 @@ while running:
     lives_text = font.render("Lives: " + str(player_lives), True, (255, 255, 255))
     screen.blit(lives_text, (10, 10))
 
-      # Draw score
+    # Draw score
     score_text = font.render("Score: " + str(score), True, (255, 255, 255))
     screen.blit(score_text, (window_width - score_text.get_width() - 10, 10))
 
     # Update the display
     pygame.display.update()
-
-
